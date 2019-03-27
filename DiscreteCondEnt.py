@@ -192,19 +192,21 @@ from sklearn.model_selection import cross_val_score
 #print (cross_val_score(clf,np.transpose(rv[ConditionSet(numRV, 0, 6)]), rv[0], cv=3, scoring=CondEntropyScorer))
 
 
-def computeEnt(rv, clf, scorer, entropy, CV_Fold):
+def computeEnt(rv, clf, scorer, entropy, CV_Fold, verbose=False):
     num_RV = rv.shape[0]
     _high = np.amax(rv)
     _low = np.amin(rv)
     numComb = np.power(2, num_RV - 1)
     DEntropy = np.zeros((num_RV, numComb))
-    print (num_RV, " Discrete RVs with range [", _low, ", ", _high, "]")
-    print ("Resp\tCond\tH(Resp|Cond)")
+    if verbose:
+        print (num_RV, " Discrete RVs with range [", _low, ", ", _high, "]")
+        print ("Resp\tCond\tH(Resp|Cond)")
     for Resp in range(num_RV):
         DEntropy[Resp,0] = entropy(rv[Resp])
         for sI in range(1, numComb):
             DEntropy[Resp,sI] = np.mean(cross_val_score(clf,np.transpose(rv[ConditionSet(num_RV, Resp, sI)]), rv[Resp], cv=CV_Fold, scoring=scorer))
-            print (Resp, "\t", ConditionSet(num_RV, Resp, sI), "\t", DEntropy[Resp,sI])
+            if verbose:
+                print (Resp, "\t", ConditionSet(num_RV, Resp, sI), "\t", DEntropy[Resp,sI])
     return DEntropy
 
 def getRandomVar_select(method, low, high, RVsize, numRV, depend):
