@@ -132,10 +132,10 @@ def train(data, mine_net,mine_net_optim, resp=0, cond=1, batch_size=100         
             avg_valid_losses.append(valid_loss)
 
             iter_len = len(str(iter_num))
-            print_msg = (f'[{i:>{iter_len}}/{iter_num:>{iter_len}}] ' +
-                         f'train_loss: {train_loss:.5f} ' +
-                         f'valid_loss: {valid_loss:.5f}')
-            print (print_msg)
+            #print_msg = (f'[{i:>{iter_len}}/{iter_num:>{iter_len}}] ' +
+            #             f'train_loss: {train_loss:.5f} ' +
+            #             f'valid_loss: {valid_loss:.5f}')
+            #print (print_msg)
 
             train_losses = []
             valid_losses = []
@@ -230,4 +230,19 @@ for i in range(5, 10):
 
 #plt.legend()
 #plt.show()
+fig,ax = plt.subplots()
+ax.scatter(COV2, MINE2, c='b', label='MINE')
+ax.scatter(COV2, LinReg2, c='r', label='Regressor')
+ax.scatter(COV2, GT2, c='g', label='Ground Truth')
 
+ax.legend()
+fig.savefig('MINE_Upper_bound', bbox_inches='tight')
+
+fig2, ax2 = plt.subplots()
+COV22 = np.log(np.ones(len(COV2)) - COV2)
+ax2.scatter(COV22, MINE2, c='b', label='MINE')
+ax2.scatter(COV22, LinReg2, c='r', label='Regressor')
+ax2.scatter(COV22, GT2, c='g', label='Ground Truth')
+
+ax2.legend()
+fig2.savefig('MINE_Upper_bound_log', bbox_inches='tight')
