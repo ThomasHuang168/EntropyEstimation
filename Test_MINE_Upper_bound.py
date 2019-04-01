@@ -146,8 +146,8 @@ def train(data, mine_net,mine_net_optim, resp=0, cond=1, batch_size=100         
     return mine_net, avg_train_losses, avg_valid_losses
 
 def ma(a, window_size=100):
-    if len(a)<=window_size:
-        return np.mean(a)
+    if len(a)<=window_size+1:
+        return [np.mean(a)]
     else:
         return [np.mean(a[i:i+window_size]) for i in range(0,len(a)-window_size)]
 
@@ -223,7 +223,7 @@ for i in range(1, 15):
     #MINE
     mine_net = Mine()
     mine_net_optim = optim.Adam(mine_net.parameters(), lr=1e-3)
-    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False)
+    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, patience=200)
     result_ma = ma(vl)
     MINE2.append(result_ma[-1])
     #MINE
