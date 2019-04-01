@@ -9,10 +9,10 @@ low, high, RVsize, numRV = 0, 1, 1000, 6
 depend = np.array([0, 1, 3])
 rv = DC.getRandomVar_select(np.random.uniform, low, high, RVsize, numRV, depend)
 
-from sklearn.metrics import mean_squared_log_error
+from sklearn.metrics import mean_squared_error
 def logMSEscorer(clf, X, y):
     y_est = clf.predict(X)
-    return mean_squared_log_error(y, y_est)
+    return mean_squared_error(y, y_est)
 
 def varEntropy(y):
     return -1*np.log(np.var(y))

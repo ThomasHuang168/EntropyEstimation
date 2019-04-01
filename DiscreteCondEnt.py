@@ -93,15 +93,26 @@ def ConditionSet(size, Resp, index):
     return cond
 
 def ConditionIndex(size, Resp, cond):
-    condSet = np.zeros(cond.shape)
-    for i in range(condSet.size):
-        if cond[i] > Resp:
-            condSet[i] = cond[i] - 1
-        else:
-            condSet[i] = cond[i]
-    indexInResp = subsetIndex(size, condSet)
-    index = Resp * np.power(2, size-1) + indexInResp
-    return index
+    if (np.ma.is_masked(cond)):
+        condSet = []
+        for i in range(cond.size):
+            if cond.mask[i] == False:
+                if cond[i] > Resp:
+                    condSet.append(cond[i] - 1)
+                else:
+                    condSet.append(cond[i])
+        condSet = np.array(condSet)
+        sizeUnmasked = size - np.ma.count_masked(cond)
+        indexInResp = subsetIndex(sizeUnmasked, condSet)
+    else:
+        condSet = np.zeros(cond.shape)
+        for i in range(condSet.size):
+            if cond[i] > Resp:
+                condSet[i] = cond[i] - 1
+            else:
+                condSet[i] = cond[i]
+        indexInResp = subsetIndex(size, condSet)
+    return indexInResp
 
 def DiscreteEntropy(y):
     #cols = y.shape[y.ndim-1]
@@ -224,13 +235,22 @@ def getRandomVar(method, low, high, RVsize, numRV):
 if __name__ == "__main__":
     #TestSubsetAndIndex(6)
     #ground truth
-    low, high, RVsize, numRV = 0, 2, 1000, 6
-    depend = np.array([0, 1, 2])
-    rv = getRandomVar_select(randint.rvs, low, high, RVsize, numRV, depend)
 
-    from sklearn import neighbors
-    numNeighbors = high
-    clf = neighbors.KNeighborsClassifier(numNeighbors)
+    # low, high, RVsize, numRV = 0, 2, 1000, 6
+    # depend = np.array([0, 1, 2])
+    # rv = getRandomVar_select(randint.rvs, low, high, RVsize, numRV, depend)
 
-    CVFold = 3
-    computeEnt(rv, clf, CondDEntropyScorer, DiscreteEntropy, CVFold)
+    # from sklearn import neighbors
+    # numNeighbors = high
+    # clf = neighbors.KNeighborsClassifier(numNeighbors)
+
+    # CVFold = 3
+    # computeEnt(rv, clf, CondDEntropyScorer, DiscreteEntropy, CVFold)
+
+    numRV = 6
+    index = np.ma.array(np.arange(numRV), mask=False)
+    for i in range(numRV):
+        index.mask[i] = True
+        print("CondIndex[{0},{1}]={2}".format(i,index,ConditionIndex(numRV, i, index)))
+        #print (index.shape)
+        index.mask[i] = False
