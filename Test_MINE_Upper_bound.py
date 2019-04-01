@@ -131,11 +131,8 @@ def train(data, mine_net,mine_net_optim, resp=0, cond=1, batch_size=100         
             avg_train_losses.append(train_loss)
             avg_valid_losses.append(valid_loss)
 
-            iter_len = len(str(iter_num))
-            #print_msg = (f'[{i:>{iter_len}}/{iter_num:>{iter_len}}] ' +
-            #             f'train_loss: {train_loss:.5f} ' +
-            #             f'valid_loss: {valid_loss:.5f}')
-            #print (print_msg)
+            print_msg = "[{0}/{1}] train_loss: {2} valid_loss: {3}".format(i, iter_num, train_loss, valid_loss)
+            print (print_msg)
 
             train_losses = []
             valid_losses = []
