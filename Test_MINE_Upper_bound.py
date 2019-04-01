@@ -149,7 +149,10 @@ def train(data, mine_net,mine_net_optim, resp=0, cond=1, batch_size=100         
     return mine_net, avg_train_losses, avg_valid_losses
 
 def ma(a, window_size=100):
-    return [np.mean(a[i:i+window_size]) for i in range(0,len(a)-window_size)]
+    if len(a)<=window_size:
+        return np.mean(a)
+    else:
+        return [np.mean(a[i:i+window_size]) for i in range(0,len(a)-window_size)]
 
 def visualizeAndSave(train_loss, valid_loss, figName=''):
     # visualize the loss as the network trained
@@ -205,7 +208,7 @@ LinReg2 = []
 GT2 = []
 COV2 = []
 CVFold = 3
-for i in range(5, 10):
+for i in range(1, 15):
     cov = 1 - 0.1**i
     COV2.append(cov)
     x = np.transpose(np.random.multivariate_normal( mean=[0,0],
