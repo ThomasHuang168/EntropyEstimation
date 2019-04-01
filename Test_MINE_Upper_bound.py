@@ -246,3 +246,50 @@ ax2.scatter(COV22, GT2, c='g', label='Ground Truth')
 
 ax2.legend()
 fig2.savefig('MINE_Upper_bound_log', bbox_inches='tight')
+
+
+MINE2 = []
+LinReg2 = []
+GT2 = []
+COV2 = []
+CVFold = 3
+for i in range(1, 10):
+    cov = 0.99999999
+    size2 = 10**i
+    COV2.append(cov)
+    x = np.transpose(np.random.multivariate_normal( mean=[0,0],
+                                  cov=[[1,cov],[cov,1]],
+                                 size = 100*size2))
+    DE = DC.computeEnt(x, linReg, MSEscorer, varEntropy, CVFold)
+    MI = DE[1,0] + DE[0,0] - DE[0,1] - DE[1,1]
+    MI = MI/2
+    LinReg2.append(MI)
+    #plt.scatter(cov, MI, c='g',label='KNN-regressor')
+    groundTruth = -0.5*np.log(1-cov*cov)
+    GT2.append(groundTruth)
+    #plt.scatter(cov, groundTruth, c='r',label='ground truth')
+    
+    #MINE
+    mine_net = Mine()
+    mine_net_optim = optim.Adam(mine_net.parameters(), lr=1e-3)
+    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, patience=200, batch_size=size2)
+    result_ma = ma(vl)
+    MINE2.append(result_ma[-1])
+    #MINE
+
+fig,ax = plt.subplots()
+ax.scatter(COV2, MINE2, c='b', label='MINE')
+ax.scatter(COV2, LinReg2, c='r', label='Regressor')
+ax.scatter(COV2, GT2, c='g', label='Ground Truth')
+
+ax.legend()
+fig.savefig('MINE_size_Upper_bound', bbox_inches='tight')
+
+fig2, ax2 = plt.subplots()
+COV22 = np.log(np.ones(len(COV2)) - COV2)
+ax2.scatter(COV22, MINE2, c='b', label='MINE')
+ax2.scatter(COV22, LinReg2, c='r', label='Regressor')
+ax2.scatter(COV22, GT2, c='g', label='Ground Truth')
+
+ax2.legend()
+fig2.savefig('MINE_size_Upper_bound_log', bbox_inches='tight')
