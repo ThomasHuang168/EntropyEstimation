@@ -163,7 +163,6 @@ def visualizeAndSave(train_loss, valid_loss, figName):
 
     plt.xlabel('epochs')
     plt.ylabel('loss')
-    plt.ylim(0, 0.5) # consistent scale
     plt.xlim(0, len(train_loss)+1) # consistent scale
     plt.grid(True)
     plt.legend()
