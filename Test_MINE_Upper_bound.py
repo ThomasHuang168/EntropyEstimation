@@ -168,7 +168,6 @@ def visualizeAndSave(train_loss, valid_loss, figName=''):
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    plt.show()
     if figName != '':
         fig.savefig('loss_plot.png', bbox_inches='tight')
     else:
@@ -180,6 +179,8 @@ def visualizeAndSave(train_loss, valid_loss, figName=''):
 
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import math
 from scipy.stats import randint
@@ -189,12 +190,12 @@ from sklearn.linear_model import LinearRegression
 linReg = LinearRegression()
 
 def varEntropy(y):
-    return np.log(np.var(y)*3.14159*2)/2
+    return np.log(np.var(y)*np.pi*2)/2
 
 from sklearn.metrics import mean_squared_error
 def MSEscorer(clf, X, y):
     y_est = clf.predict(X)
-    return np.log(mean_squared_error(y, y_est)*3.14159*2)/2
+    return np.log(mean_squared_error(y, y_est)*np.pi*2)/2
 
 
 # In[5]:
@@ -205,12 +206,13 @@ LinReg2 = []
 GT2 = []
 COV2 = []
 CVFold = 3
+MINEsize2 = 1000
 for i in range(1, 15):
     cov = 1 - 0.1**i
     COV2.append(cov)
     x = np.transpose(np.random.multivariate_normal( mean=[0,0],
                                   cov=[[1,cov],[cov,1]],
-                                 size = 1000))
+                                 size = MINEsize2 * 10))
     DE = DC.computeEnt(x, linReg, MSEscorer, varEntropy, CVFold)
     MI = DE[1,0] + DE[0,0] - DE[0,1] - DE[1,1]
     MI = MI/2
@@ -223,20 +225,21 @@ for i in range(1, 15):
     #MINE
     mine_net = Mine()
     mine_net_optim = optim.Adam(mine_net.parameters(), lr=1e-3)
-    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, patience=200)
+    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, batch_size=MINEsize2, patience=50)
     result_ma = ma(vl)
     MINE2.append(result_ma[-1])
+    filename = "MINE_Train_Fig_cov={0}_size={1}.png".format(cov,MINEsize2)
+    visualizeAndSave(tl, vl, filename)
     #MINE
 
-#plt.legend()
-#plt.show()
 fig,ax = plt.subplots()
 ax.scatter(COV2, MINE2, c='b', label='MINE')
 ax.scatter(COV2, LinReg2, c='r', label='Regressor')
 ax.scatter(COV2, GT2, c='g', label='Ground Truth')
 
 ax.legend()
-fig.savefig('MINE_Upper_bound', bbox_inches='tight')
+filename = "MINE_Upper_bound_size={0}".format(MINEsize2)
+fig.savefig(filename, bbox_inches='tight')
 
 fig2, ax2 = plt.subplots()
 COV22 = np.log(np.ones(len(COV2)) - COV2)
@@ -245,7 +248,8 @@ ax2.scatter(COV22, LinReg2, c='r', label='Regressor')
 ax2.scatter(COV22, GT2, c='g', label='Ground Truth')
 
 ax2.legend()
-fig2.savefig('MINE_Upper_bound_log', bbox_inches='tight')
+filename = "MINE_Upper_bound_log_size={0}".format(MINEsize2)
+fig2.savefig(filename, bbox_inches='tight')
 
 
 MINE2 = []
@@ -253,13 +257,13 @@ LinReg2 = []
 GT2 = []
 COV2 = []
 CVFold = 3
+cov = 0.9999
 for i in range(1, 10):
-    cov = 0.99999999
     size2 = 10**i
     COV2.append(cov)
     x = np.transpose(np.random.multivariate_normal( mean=[0,0],
                                   cov=[[1,cov],[cov,1]],
-                                 size = 100*size2))
+                                 size = 10*size2))
     DE = DC.computeEnt(x, linReg, MSEscorer, varEntropy, CVFold)
     MI = DE[1,0] + DE[0,0] - DE[0,1] - DE[1,1]
     MI = MI/2
@@ -272,9 +276,11 @@ for i in range(1, 10):
     #MINE
     mine_net = Mine()
     mine_net_optim = optim.Adam(mine_net.parameters(), lr=1e-3)
-    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, patience=200, batch_size=size2)
+    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, patience=50, batch_size=size2)
     result_ma = ma(vl)
     MINE2.append(result_ma[-1])
+    filename = "MINE_Train_Fig_sampleSize={0}_cov={1}.png".format(size2,cov)
+    visualizeAndSave(tl, vl, filename)
     #MINE
 
 fig,ax = plt.subplots()
@@ -283,7 +289,8 @@ ax.scatter(COV2, LinReg2, c='r', label='Regressor')
 ax.scatter(COV2, GT2, c='g', label='Ground Truth')
 
 ax.legend()
-fig.savefig('MINE_size_Upper_bound', bbox_inches='tight')
+filename = "MINE_size_Upper_bound_cov={0}".format(cov)
+fig.savefig(filename, bbox_inches='tight')
 
 fig2, ax2 = plt.subplots()
 COV22 = np.log(np.ones(len(COV2)) - COV2)
@@ -292,4 +299,5 @@ ax2.scatter(COV22, LinReg2, c='r', label='Regressor')
 ax2.scatter(COV22, GT2, c='g', label='Ground Truth')
 
 ax2.legend()
-fig2.savefig('MINE_size_Upper_bound_log', bbox_inches='tight')
+filename = "MINE_size_log_Upper_bound_cov={0}".format(cov)
+fig2.savefig(filename, bbox_inches='tight')
