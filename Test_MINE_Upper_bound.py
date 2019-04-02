@@ -204,34 +204,51 @@ GT2 = []
 COV2 = []
 CVFold = 3
 MINEsize2 = 100
-for i in range(1, 2):
-    cov = 1 - 0.1**i
-    COV2.append(cov)
+def worker_Train_Mine_cov(input_arg):
+    cov, MINEsize = input_arg
+    MINEsize = int(MINEsize)
     x = np.transpose(np.random.multivariate_normal( mean=[0,0],
                                   cov=[[1,cov],[cov,1]],
-                                 size = MINEsize2 * 10))
+                                 size = MINEsize * 1000))
     DE = DC.computeEnt(x, linReg, MSEscorer, varEntropy, CVFold)
     MI = DE[1,0] + DE[0,0] - DE[0,1] - DE[1,1]
     MI = MI/2
-    LinReg2.append(MI)
-    #plt.scatter(cov, MI, c='g',label='KNN-regressor')
-    groundTruth = -0.5*np.log(1-cov*cov)
-    GT2.append(groundTruth)
-    #plt.scatter(cov, groundTruth, c='r',label='ground truth')
-    
-    #MINE
+    REG = MI
+
+    GT = -0.5*np.log(1-cov*cov)
+
     mine_net = Mine()
     mine_net_optim = optim.Adam(mine_net.parameters(), lr=1e-3)
-    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, batch_size=MINEsize2, patience=50)
+    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, batch_size=MINEsize, patience=50)
     result_ma = ma(vl)
-    MINE2.append(result_ma[-1])
-    filename = "MINE_Train_Fig_cov={0}_size={1}.png".format(cov,MINEsize2)
+    MINE = result_ma[-1]
+    filename = "MINE_Train_Fig_cov={0}_size={1}.png".format(cov,MINEsize)
     visualizeAndSave(tl, vl, filename)
-    #MINE
+
+    return cov, MINE, REG, GT
+
+from multiprocessing.dummy import Pool as ThreadPool
+
+def ParallelWork_cov(Size0):
+    numThreads = 9
+    cov = 1 - 0.5**np.arange(numThreads)
+    size = int(Size0)*np.ones(numThreads)
+    inputArg = np.concatenate((cov[:,None],size[:,None]),axis=1).tolist()
+    pool = ThreadPool(numThreads)
+    results = pool.map(worker_Train_Mine_cov, inputArg)
+    pool.close()
+    pool.join()
+    return results
+
+result = np.array(ParallelWork_cov(MINEsize2))
+COV2 = result[:,0]
+MINE2 = result[:,1]
+Reg2 = result[:,2]
+GT2 = result[:,3]
 
 fig,ax = plt.subplots()
 ax.scatter(COV2, MINE2, c='b', label='MINE')
-ax.scatter(COV2, LinReg2, c='r', label='Regressor')
+ax.scatter(COV2, Reg2, c='r', label='Regressor')
 ax.scatter(COV2, GT2, c='g', label='Ground Truth')
 
 ax.legend()
@@ -241,7 +258,7 @@ fig.savefig(filename, bbox_inches='tight')
 fig2, ax2 = plt.subplots()
 COV22 = np.log(np.ones(len(COV2)) - COV2)
 ax2.scatter(COV22, MINE2, c='b', label='MINE')
-ax2.scatter(COV22, LinReg2, c='r', label='Regressor')
+ax2.scatter(COV22, Reg2, c='r', label='Regressor')
 ax2.scatter(COV22, GT2, c='g', label='Ground Truth')
 
 ax2.legend()
@@ -255,30 +272,48 @@ GT2 = []
 COV2 = []
 CVFold = 3
 cov = 0.9999
-for i in range(1, 10):
-    size2 = 10**i
-    COV2.append(cov)
-    x = np.transpose(np.random.multivariate_normal( mean=[0,0],
-                                  cov=[[1,cov],[cov,1]],
-                                 size = 10*size2))
-    DE = DC.computeEnt(x, linReg, MSEscorer, varEntropy, CVFold)
-    MI = DE[1,0] + DE[0,0] - DE[0,1] - DE[1,1]
-    MI = MI/2
-    LinReg2.append(MI)
-    #plt.scatter(cov, MI, c='g',label='KNN-regressor')
-    groundTruth = -0.5*np.log(1-cov*cov)
-    GT2.append(groundTruth)
-    #plt.scatter(cov, groundTruth, c='r',label='ground truth')
+# for i in range(1, 10):
+#     size2 = 2**i
+#     COV2.append(cov)
+#     x = np.transpose(np.random.multivariate_normal( mean=[0,0],
+#                                   cov=[[1,cov],[cov,1]],
+#                                  size = 100*size2))
+#     DE = DC.computeEnt(x, linReg, MSEscorer, varEntropy, CVFold)
+#     MI = DE[1,0] + DE[0,0] - DE[0,1] - DE[1,1]
+#     MI = MI/2
+#     LinReg2.append(MI)
+#     #plt.scatter(cov, MI, c='g',label='KNN-regressor')
+#     groundTruth = -0.5*np.log(1-cov*cov)
+#     GT2.append(groundTruth)
+#     #plt.scatter(cov, groundTruth, c='r',label='ground truth')
     
-    #MINE
-    mine_net = Mine()
-    mine_net_optim = optim.Adam(mine_net.parameters(), lr=1e-3)
-    mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, patience=50, batch_size=size2)
-    result_ma = ma(vl)
-    MINE2.append(result_ma[-1])
-    filename = "MINE_Train_Fig_sampleSize={0}_cov={1}.png".format(size2,cov)
-    visualizeAndSave(tl, vl, filename)
-    #MINE
+#     #MINE
+#     mine_net = Mine()
+#     mine_net_optim = optim.Adam(mine_net.parameters(), lr=1e-3)
+#     mine_net,tl ,vl = train(np.transpose(x),mine_net,mine_net_optim, verbose=False, patience=50, batch_size=size2)
+#     result_ma = ma(vl)
+#     MINE2.append(result_ma[-1])
+#     filename = "MINE_Train_Fig_sampleSize={0}_cov={1}.png".format(size2,cov)
+#     visualizeAndSave(tl, vl, filename)
+#     #MINE
+
+def ParallelWork_size(Cov0):
+    numThreads = 9
+    size = int(2)**np.arange(numThreads)
+    cov = int(Cov0)*np.ones(numThreads)
+    inputArg = np.concatenate((cov[:,None],size[:,None]),axis=1).tolist()
+    pool = ThreadPool(numThreads)
+    results = pool.map(worker_Train_Mine_cov, inputArg)
+    pool.close()
+    pool.join()
+    return results
+
+result = np.array(ParallelWork_size(cov))
+COV2 = result[:,0]
+MINE2 = result[:,1]
+Reg2 = result[:,2]
+GT2 = result[:,3]
+
 
 fig,ax = plt.subplots()
 ax.scatter(COV2, MINE2, c='b', label='MINE')
