@@ -99,7 +99,7 @@ def sample_batch(data, resp, cond, batch_size=100, sample_mode='joint'):
                                    axis=1)
     return batch_joint, batch_mar
 
-def train(data, mine_net,mine_net_optim, resp=0, cond=1, batch_size=100          , iter_num=int(5e+4), log_freq=int(1e+3)          , avg_freq=int(1e+2), verbose=True, patience=20):
+def train(data, mine_net,mine_net_optim, resp=0, cond=1, batch_size=100          , iter_num=int(1e+4), log_freq=int(1e+3)          , avg_freq=int(1e+2), verbose=True, patience=20):
     # data is x or y
     result = list()
     ma_et = 1.
@@ -151,7 +151,7 @@ def ma(a, window_size=100):
     else:
         return [np.mean(a[i:i+window_size]) for i in range(0,len(a)-window_size)]
 
-def visualizeAndSave(train_loss, valid_loss, figName=''):
+def visualizeAndSave(train_loss, valid_loss, figName):
     # visualize the loss as the network trained
     fig = plt.figure(figsize=(10,8))
     plt.plot(range(1,len(train_loss)+1),train_loss, label='Training Loss')
@@ -168,10 +168,7 @@ def visualizeAndSave(train_loss, valid_loss, figName=''):
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
-    if figName != '':
-        fig.savefig('loss_plot.png', bbox_inches='tight')
-    else:
-        fig.savefig(figName, bbox_inches='tight')
+    fig.savefig(figName, bbox_inches='tight')
 
 
 # In[3]:
@@ -206,8 +203,8 @@ LinReg2 = []
 GT2 = []
 COV2 = []
 CVFold = 3
-MINEsize2 = 1000
-for i in range(1, 15):
+MINEsize2 = 100
+for i in range(1, 2):
     cov = 1 - 0.1**i
     COV2.append(cov)
     x = np.transpose(np.random.multivariate_normal( mean=[0,0],
