@@ -198,7 +198,7 @@ def MSEscorer(clf, X, y):
 
 
 MINE2 = []
-LinReg2 = []
+Reg2 = []
 GT2 = []
 COV2 = []
 CVFold = 3
@@ -266,7 +266,7 @@ fig2.savefig(filename, bbox_inches='tight')
 
 
 MINE2 = []
-LinReg2 = []
+Reg2 = []
 GT2 = []
 COV2 = []
 CVFold = 3
@@ -280,7 +280,7 @@ cov = 0.9999
 #     DE = DC.computeEnt(x, linReg, MSEscorer, varEntropy, CVFold)
 #     MI = DE[1,0] + DE[0,0] - DE[0,1] - DE[1,1]
 #     MI = MI/2
-#     LinReg2.append(MI)
+#     Reg2.append(MI)
 #     #plt.scatter(cov, MI, c='g',label='KNN-regressor')
 #     groundTruth = -0.5*np.log(1-cov*cov)
 #     GT2.append(groundTruth)
@@ -316,7 +316,7 @@ GT2 = result[:,3]
 
 fig,ax = plt.subplots()
 ax.scatter(COV2, MINE2, c='b', label='MINE')
-ax.scatter(COV2, LinReg2, c='r', label='Regressor')
+ax.scatter(COV2, Reg2, c='r', label='Regressor')
 ax.scatter(COV2, GT2, c='g', label='Ground Truth')
 
 ax.legend()
@@ -326,7 +326,7 @@ fig.savefig(filename, bbox_inches='tight')
 fig2, ax2 = plt.subplots()
 COV22 = np.log(np.ones(len(COV2)) - COV2)
 ax2.scatter(COV22, MINE2, c='b', label='MINE')
-ax2.scatter(COV22, LinReg2, c='r', label='Regressor')
+ax2.scatter(COV22, Reg2, c='r', label='Regressor')
 ax2.scatter(COV22, GT2, c='g', label='Ground Truth')
 
 ax2.legend()
